@@ -6,6 +6,7 @@ import android.database.Cursor;
 import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 
+import com.example.brandon.apiclient.Models.Comment;
 import com.example.brandon.apiclient.Models.Post;
 
 import java.util.ArrayList;
@@ -90,5 +91,22 @@ public class PostHelper {
         int x = cursor.getCount();
         cursor.close();
         return x > 0;
+    }
+
+    public ArrayList<Post> getAllPostsWithComments(CommentHelper oCommentHelper) {
+        ArrayList<Post> listPost = new ArrayList<>();
+        Cursor cursor = database.query(DBUtils.POST_TABLE_NAME, POST_TABLE_COLUMNS, null, null, null, null, null);
+
+        oCommentHelper.open();
+        cursor.moveToFirst();
+        while (!cursor.isAfterLast()) {
+            Post oPost = parsePost(cursor);
+            oPost.setComments(oCommentHelper.getCommentsByPostId(oPost.getId()));
+            listPost.add(oPost);
+            cursor.moveToNext();
+        }
+        oCommentHelper.close();
+        cursor.close();
+        return listPost;
     }
 }

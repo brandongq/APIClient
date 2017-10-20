@@ -13,12 +13,14 @@ import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonArrayRequest;
+import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
 import com.example.brandon.apiclient.Models.Comment;
 import com.example.brandon.apiclient.Models.Post;
 import com.example.brandon.apiclient.Utils.CommentHelper;
 import com.example.brandon.apiclient.Utils.PostHelper;
 import com.example.brandon.apiclient.Views.CommentActivity;
+import com.example.brandon.apiclient.Views.InflatableActivity;
 import com.example.brandon.apiclient.Views.PostsActivity;
 
 import org.json.JSONArray;
@@ -28,8 +30,6 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity {
-
-    private final String url = "";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,10 +41,16 @@ public class MainActivity extends AppCompatActivity {
         Button btnGetComments = (Button) findViewById(R.id.btnGetComments);
         Button btnSeePosts = (Button) findViewById(R.id.btnSeePosts);
         Button btnSeeComments = (Button) findViewById(R.id.btnSeeComments);
+        Button btnPostPosts = (Button) findViewById(R.id.btnPostPosts);
+        Button btnPostComments = (Button) findViewById(R.id.btnPostComments);
+        Button btnSeePostsWithComments = (Button) findViewById(R.id.btnSeePostsWithComments);
+
 
         final RequestQueue queue = Volley.newRequestQueue(this);
         final String commentsUrl = "https://jsonplaceholder.typicode.com/comments";
         final String postsUrl = "https://jsonplaceholder.typicode.com/posts";
+        final String postPostsURL = "http://107.170.247.123:2403/posts";
+        final String postCommentsURL = "http://107.170.247.123:2403/comments";
 
         final PostHelper oPostHelper = new PostHelper(this);
         final CommentHelper oCommentHelper = new CommentHelper(this);
@@ -85,15 +91,15 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 final JsonArrayRequest jsonArrayRequest = new JsonArrayRequest
-                        (Request.Method.GET, postsUrl, null, new Response.Listener<JSONArray>(){
+                        (Request.Method.GET, postsUrl, null, new Response.Listener<JSONArray>() {
                             @Override
-                            public void onResponse(JSONArray response){
+                            public void onResponse(JSONArray response) {
                                 try {
                                     oPostHelper.open();
                                     for (int i = 0; i < response.length(); i++) {
                                         JSONObject post = response.getJSONObject(i);
                                         int id = post.getInt("id");
-                                        if(oPostHelper.exists(id)==false) {
+                                        if (oPostHelper.exists(id) == false) {
                                             int userId = post.getInt("userId");
                                             String title = post.getString("title");
                                             String body = post.getString("body");
@@ -123,15 +129,15 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 final JsonArrayRequest jsonArrayRequest = new JsonArrayRequest
-                        (Request.Method.GET, commentsUrl, null, new Response.Listener<JSONArray>(){
+                        (Request.Method.GET, commentsUrl, null, new Response.Listener<JSONArray>() {
                             @Override
-                            public void onResponse(JSONArray response){
+                            public void onResponse(JSONArray response) {
                                 try {
                                     oCommentHelper.open();
                                     for (int i = 0; i < response.length(); i++) {
                                         JSONObject comment = response.getJSONObject(i);
                                         int id = comment.getInt("id");
-                                        if(oCommentHelper.exists(id)==false) {
+                                        if (!oCommentHelper.exists(id)) {
                                             int postId = comment.getInt("postId");
                                             String name = comment.getString("name");
                                             String email = comment.getString("email");
@@ -164,7 +170,7 @@ public class MainActivity extends AppCompatActivity {
                 oPostHelper.open();
                 ArrayList<Post> postsList = oPostHelper.getAllPosts();
                 oPostHelper.close();
-                if(postsList.size() == 0)
+                if (postsList.size() == 0)
                     Toast.makeText(getApplicationContext(), "No Posts", Toast.LENGTH_SHORT).show();
                 else {
                     Intent intent = new Intent(getApplicationContext(), PostsActivity.class);
@@ -180,7 +186,7 @@ public class MainActivity extends AppCompatActivity {
                 oCommentHelper.open();
                 ArrayList<Comment> commentsList = oCommentHelper.getAllComments();
                 oCommentHelper.close();
-                if(commentsList.size() == 0)
+                if (commentsList.size() == 0)
                     Toast.makeText(getApplicationContext(), "No Comments", Toast.LENGTH_SHORT).show();
                 else {
                     Intent intent = new Intent(getApplicationContext(), CommentActivity.class);
@@ -190,5 +196,97 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        btnPostPosts.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                oPostHelper.open();
+                final ArrayList<Post> posts = oPostHelper.getAllPosts();
+                oPostHelper.close();
+                for (int i = 0; i < posts.size(); i++) {
+
+                    final JSONObject postJSONObject = parsePostToJSONObject(posts.get(i));
+
+                    final JsonObjectRequest jsonPostRequest = new JsonObjectRequest
+                            (Request.Method.POST, postPostsURL, postJSONObject, new Response.Listener<JSONObject>() {
+                                @Override
+                                public void onResponse(JSONObject response) {
+                                    Toast.makeText(myContext, response.toString(), Toast.LENGTH_SHORT).show();
+                                }
+                            }, new Response.ErrorListener() {
+                                @Override
+                                public void onErrorResponse(VolleyError error) {
+                                    Toast.makeText(myContext, error.toString(), Toast.LENGTH_SHORT).show();
+                                }
+                            });
+                    queue.add(jsonPostRequest);
+                }
+            }
+        });
+
+        btnPostComments.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                oCommentHelper.open();
+                final ArrayList<Comment> comments = oCommentHelper.getAllComments();
+                oCommentHelper.close();
+                for (int i = 0; i < comments.size(); i++) {
+
+                    final JSONObject commentJSONObject = parseCommentToJSONObject(comments.get(i));
+
+                    final JsonObjectRequest jsonPostRequest = new JsonObjectRequest
+                            (Request.Method.POST, postCommentsURL, commentJSONObject, new Response.Listener<JSONObject>() {
+                                @Override
+                                public void onResponse(JSONObject response) {
+                                    Toast.makeText(myContext, response.toString(), Toast.LENGTH_SHORT).show();
+                                }
+                            }, new Response.ErrorListener() {
+                                @Override
+                                public void onErrorResponse(VolleyError error) {
+                                    Toast.makeText(myContext, error.toString(), Toast.LENGTH_SHORT).show();
+                                }
+                            });
+                    queue.add(jsonPostRequest);
+                }
+
+            }
+        });
+
+        btnSeePostsWithComments.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                oPostHelper.open();
+                ArrayList<Post> postsWithComments = oPostHelper.getAllPostsWithComments(oCommentHelper);
+                oPostHelper.close();
+                Intent intent = new Intent(getApplicationContext(), InflatableActivity.class);
+                intent.putExtra("data", postsWithComments);
+                startActivity(intent);
+            }
+        });
+
+    }
+
+    private JSONObject parsePostToJSONObject (Post p) {
+        JSONObject jObject = new JSONObject();
+        try {
+            jObject.put("userId", p.getUserId());
+            jObject.put("title", p.getTitle());
+            jObject.put("body", p.getBody());
+        }catch (Exception e){
+
+        }
+        return jObject;
+    }
+
+    private JSONObject parseCommentToJSONObject (Comment c) {
+        JSONObject jsonObject = new JSONObject();
+        try {
+            jsonObject.put("postId", c.getPostId());
+            jsonObject.put("name", c.getName());
+            jsonObject.put("email", c.getEmail());
+            jsonObject.put("body", c.getBody());
+        }catch (Exception e){
+
+        }
+        return jsonObject;
     }
 }

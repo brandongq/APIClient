@@ -94,4 +94,20 @@ public class CommentHelper {
         cursor.close();
         return x > 0;
     }
+
+    public ArrayList<Comment> getCommentsByPostId (int postID) {
+        ArrayList<Comment> comments = new ArrayList<>();
+        Cursor cursor = database.query(DBUtils.COMMENT_TABLE_NAME,
+                COMMENT_TABLE_COLUMNS,
+                DBUtils.COMMENT_POST_ID + " = " + postID,
+                null, null, null, null);
+
+        cursor.moveToFirst();
+        while (!cursor.isAfterLast()) {
+            comments.add(parseComment(cursor));
+            cursor.moveToNext();
+        }
+        cursor.close();
+        return comments;
+    }
 }

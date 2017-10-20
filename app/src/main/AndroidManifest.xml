@@ -19,7 +19,8 @@
             </intent-filter>
         </activity>
         <activity android:name=".Views.PostsActivity" />
-        <activity android:name=".Views.CommentActivity"></activity>
+        <activity android:name=".Views.CommentActivity" />
+        <activity android:name=".Views.InflatableActivity"></activity>
     </application>
 
 </manifest>

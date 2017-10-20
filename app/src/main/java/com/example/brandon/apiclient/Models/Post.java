@@ -3,6 +3,9 @@ package com.example.brandon.apiclient.Models;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Created by Brandon on 06-Oct-17.
  */
@@ -14,10 +17,12 @@ public class Post implements Parcelable {
     private int id;
     private String title;
     private String body;
+    private ArrayList<Comment> comments;
 
     //Constructors
     public Post(int id) {
         this.id = id;
+        comments = new ArrayList<Comment>();
     }
 
     //Getters and Setters
@@ -53,6 +58,14 @@ public class Post implements Parcelable {
         this.body = body;
     }
 
+    public ArrayList<Comment> getComments() {
+        return comments;
+    }
+
+    public void setComments(ArrayList<Comment> comments) {
+        this.comments = comments;
+    }
+
     // ------------------ PARCELABLE STUFF ------------------
 
     @Override
@@ -66,6 +79,7 @@ public class Post implements Parcelable {
         parcel.writeInt(id);
         parcel.writeString(title);
         parcel.writeString(body);
+        parcel.writeTypedList(comments);
     }
 
     public static final Parcelable.Creator<Post> CREATOR = new Parcelable.Creator<Post>() {
@@ -85,6 +99,10 @@ public class Post implements Parcelable {
         id = in.readInt();
         title = in.readString();
         body = in.readString();
+        if(comments == null){
+            comments = new ArrayList<Comment>();
+        }
+        in.readTypedList(comments, Comment.CREATOR);
     }
 
     // ------------------ PARCELABLE STUFF ------------------

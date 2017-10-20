@@ -60,6 +60,42 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="See Comments" />
+
+        <TextView
+            android:id="@+id/textView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Click on the button to post posts" />
+
+        <Button
+            android:id="@+id/btnPostPosts"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Post Posts" />
+
+        <TextView
+            android:id="@+id/textView9"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Click on the button to post comments" />
+
+        <Button
+            android:id="@+id/btnPostComments"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Post Comments" />
+
+        <TextView
+            android:id="@+id/textView13"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Click on the button to see posts with comments" />
+
+        <Button
+            android:id="@+id/btnSeePostsWithComments"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="See Posts With Comments" />
     </LinearLayout>
 
 </android.support.constraint.ConstraintLayout>
