@@ -2,10 +2,12 @@ package com.example.brandon.apiclient;
 
 import android.content.Context;
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import com.android.volley.Request;
@@ -27,9 +29,16 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity {
+
+    ProgressBar progressBar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,6 +53,9 @@ public class MainActivity extends AppCompatActivity {
         Button btnPostPosts = (Button) findViewById(R.id.btnPostPosts);
         Button btnPostComments = (Button) findViewById(R.id.btnPostComments);
         Button btnSeePostsWithComments = (Button) findViewById(R.id.btnSeePostsWithComments);
+        progressBar = (ProgressBar) findViewById(R.id.pbLoading);
+        Button btnGetPostsOldWay = (Button) findViewById(R.id.btnGetPostsOldWay);
+        Button btnGetCommentsOldWay = (Button) findViewById(R.id.btnGetCommentsOldWay);
 
 
         final RequestQueue queue = Volley.newRequestQueue(this);
@@ -90,6 +102,7 @@ public class MainActivity extends AppCompatActivity {
         btnGetPosts.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                progressBar.setVisibility(View.VISIBLE);
                 final JsonArrayRequest jsonArrayRequest = new JsonArrayRequest
                         (Request.Method.GET, postsUrl, null, new Response.Listener<JSONArray>() {
                             @Override
@@ -107,7 +120,9 @@ public class MainActivity extends AppCompatActivity {
                                         }
                                     }
                                     oPostHelper.close();
+                                    progressBar.setVisibility(View.GONE);
                                 } catch (JSONException e) {
+                                    progressBar.setVisibility(View.GONE);
                                     oPostHelper.close();
                                     e.printStackTrace();
                                 }
@@ -115,6 +130,7 @@ public class MainActivity extends AppCompatActivity {
                         }, new Response.ErrorListener() {
                             @Override
                             public void onErrorResponse(VolleyError error) {
+                                progressBar.setVisibility(View.GONE);
                                 Toast.makeText(myContext, "Error", Toast.LENGTH_SHORT).show();
                             }
                         });
@@ -128,6 +144,7 @@ public class MainActivity extends AppCompatActivity {
         btnGetComments.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                progressBar.setVisibility(View.VISIBLE);
                 final JsonArrayRequest jsonArrayRequest = new JsonArrayRequest
                         (Request.Method.GET, commentsUrl, null, new Response.Listener<JSONArray>() {
                             @Override
@@ -146,7 +163,9 @@ public class MainActivity extends AppCompatActivity {
                                         }
                                     }
                                     oCommentHelper.close();
+                                    progressBar.setVisibility(View.GONE);
                                 } catch (JSONException e) {
+                                    progressBar.setVisibility(View.GONE);
                                     oCommentHelper.close();
                                     e.printStackTrace();
                                 }
@@ -154,6 +173,7 @@ public class MainActivity extends AppCompatActivity {
                         }, new Response.ErrorListener() {
                             @Override
                             public void onErrorResponse(VolleyError error) {
+                                progressBar.setVisibility(View.GONE);
                                 Toast.makeText(myContext, "Error", Toast.LENGTH_SHORT).show();
                             }
                         });
@@ -263,6 +283,19 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        btnGetPostsOldWay.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View view) {
+                new HttpAsyncTask().execute("http://jsonplaceholder.typicode.com/posts");
+            }
+        });
+
+        btnGetCommentsOldWay.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View view) {
+                new HttpAsyncTask().execute("http://jsonplaceholder.typicode.com/comments");
+            }
+        });
     }
 
     private JSONObject parsePostToJSONObject (Post p) {
@@ -289,4 +322,55 @@ public class MainActivity extends AppCompatActivity {
         }
         return jsonObject;
     }
+
+    public static String getHTTPRequest(String url) {
+
+        URL obj = null;
+        HttpURLConnection con = null;
+        try {
+            obj = new URL(url);
+            con = (HttpURLConnection) obj.openConnection();
+            con.setRequestMethod("GET");
+
+            int responseCode = con.getResponseCode();
+
+            if (responseCode == HttpURLConnection.HTTP_OK) {
+                BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()));
+                String inputLine;
+                StringBuffer response = new StringBuffer();
+
+                while ((inputLine = in.readLine()) != null) {
+                    response.append(inputLine);
+                }
+                in.close();
+
+                return response.toString();
+            } else {
+                return "Request did not work.";
+            }
+        } catch (IOException e) {
+            return e.getMessage();
+        }
+    }
+
+    private class HttpAsyncTask extends AsyncTask<String, Void, String> {
+
+        @Override
+        protected void onPreExecute() {
+            progressBar.setVisibility(View.VISIBLE);
+        }
+
+        @Override
+        protected String doInBackground(String... urls) {
+            return getHTTPRequest(urls[0]);
+        }
+
+        @Override
+        protected void onPostExecute(String resultado) {
+            progressBar.setVisibility(View.GONE);
+            Toast.makeText(getApplicationContext(), "Received! " + resultado, Toast.LENGTH_LONG).show();
+        }
+
+    }
+
 }

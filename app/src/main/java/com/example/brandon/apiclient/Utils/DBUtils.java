@@ -10,7 +10,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 
 public class DBUtils extends SQLiteOpenHelper{
     public static final String DB_NAME = "QuePasaPOJO.db";
-    public static final int DB_VERSION = 3;
+    public static final int DB_VERSION = 4;
 
     public static final String POST_TABLE_NAME = "Post";
     public static final String POST_USER_ID = "UserId";
